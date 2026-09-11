@@ -92,7 +92,7 @@ See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for service ports and deployment no
 
 The initial development task is tracked in [Issue #1](https://github.com/localhost-hero/minicord/issues/1).
 
-The implementation is added incrementally through focused branches and Pull Requests. The first scaffold is complete; authentication, token issuance, and the real call flow are the next implementation slices.
+The implementation is added incrementally through focused branches and Pull Requests. The first scaffold is complete. LiveKit token issuance (`POST /api/rooms/{room}/token`) is available; full user authentication and the real call flow are the next implementation slices.
 
 ## Contributing
 

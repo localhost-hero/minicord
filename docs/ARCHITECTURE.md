@@ -28,6 +28,14 @@ The Go backend owns application state and access control. LiveKit owns media-ses
 
 The backend must not proxy audio through ordinary HTTP handlers.
 
+### Application API
+
+- `GET /health` reports backend liveness.
+- `POST /api/rooms/{room}/token` validates the room name and requested identity, then
+  issues a short-lived LiveKit access token (`livekit.DefaultTokenTTL`) that grants
+  join, publish, and subscribe access to that room only. The client uses the
+  returned token and LiveKit URL to establish the WebRTC session directly with LiveKit.
+
 ### React frontend
 
 - user-facing call controls;
