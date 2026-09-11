@@ -16,6 +16,11 @@ cp .env.example .env
 
 Replace placeholder LiveKit credentials before using a non-development deployment. Never commit `.env`.
 
+`LIVEKIT_URL` is returned to the browser as part of the room token response, so it
+must be an address the client can reach directly (for example `ws://localhost:7880`
+for local development, or a public `wss://` LiveKit hostname in production) rather
+than an internal container hostname.
+
 ## Start the Stack
 
 From the repository root:

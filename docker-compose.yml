@@ -5,7 +5,8 @@ services:
     container_name: minicord-backend
     environment:
       BACKEND_ADDR: ${BACKEND_ADDR:-:8080}
-      LIVEKIT_URL: ${LIVEKIT_URL:-ws://livekit:7880}
+      # Must be reachable from the browser, not just from other containers.
+      LIVEKIT_URL: ${LIVEKIT_URL:-ws://localhost:7880}
       LIVEKIT_API_KEY: ${LIVEKIT_API_KEY:-replace-with-local-key}
       LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET:-replace-with-local-secret}
     ports:
