@@ -4,7 +4,7 @@ A lightweight self-hosted web application for group voice calls.
 
 The project is designed for a `user -> server -> user` architecture. Audio must be routed through the owner's infrastructure; clients must not establish direct peer-to-peer audio connections.
 
-> Status: early development. The repository currently contains project guidelines and the initial MVP plan. The local application stack is not available yet.
+> Status: early development. The initial Go and React/Vite scaffold is available. LiveKit runtime validation requires Docker Desktop.
 
 ## Planned Architecture
 
@@ -60,19 +60,39 @@ Chat, recording, user profiles, production deployment, and advanced moderation a
 .github/
   copilot-instructions.md
   pull_request_template.md
-backend/                 # planned Go application
-frontend/                # planned React application
+backend/                 # Go application
+frontend/                # React application
 docs/                    # architecture and operational documentation
 CONTRIBUTING.md          # contribution and review workflow
 LICENSE
 README.md
 ```
 
+## Local Development
+
+Install Docker Desktop, then copy the example configuration and start the local stack:
+
+```bash
+cp .env.example .env
+docker compose up --build
+```
+
+Open the frontend at `http://localhost:5173` and check the backend at `http://localhost:8080/health`.
+
+For focused local checks:
+
+```bash
+cd backend && go test ./... && go vet ./...
+cd ../frontend && npm install && npm run build
+```
+
+See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for service ports and deployment notes.
+
 ## Development Status
 
 The initial development task is tracked in [Issue #1](https://github.com/localhost-hero/minicord/issues/1).
 
-The implementation will be added incrementally through focused branches and Pull Requests. Until the bootstrap task is complete, there are no application startup commands to run.
+The implementation is added incrementally through focused branches and Pull Requests. The first scaffold is complete; authentication, token issuance, and the real call flow are the next implementation slices.
 
 ## Contributing
 
