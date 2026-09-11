@@ -43,7 +43,13 @@ export function useCallConnection(apiBaseUrl: string): CallConnection {
 
       try {
         const { token, url } = await fetchRoomToken(apiBaseUrl, roomName, identity);
-        const room = new Room();
+        const room = new Room({
+          audioCaptureDefaults: {
+            noiseSuppression: true,
+            echoCancellation: true,
+            autoGainControl: true,
+          },
+        });
         roomRef.current = room;
         intentionalLeaveRef.current = false;
 

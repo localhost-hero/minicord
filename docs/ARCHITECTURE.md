@@ -44,6 +44,11 @@ The backend must not proxy audio through ordinary HTTP handlers.
 - LiveKit client lifecycle;
 - participant and active-speaker presentation.
 
+The LiveKit room is created with `audioCaptureDefaults` requesting the browser's
+built-in noise suppression, echo cancellation, and automatic gain control for the
+captured microphone track. This uses the standard WebRTC audio constraints; no
+additional noise-suppression dependency is added.
+
 Visual components must not manage network connections directly. Keep the LiveKit lifecycle in a dedicated frontend layer or hook.
 
 ### LiveKit SFU
