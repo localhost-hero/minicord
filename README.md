@@ -70,7 +70,7 @@ README.md
 
 ## Development Status
 
-The initial development task is tracked in [Issue #1](https://github.com/localhost-hero/selfhosted-audio-web/issues/1).
+The initial development task is tracked in [Issue #1](https://github.com/localhost-hero/minicord/issues/1).
 
 The implementation will be added incrementally through focused branches and Pull Requests. Until the bootstrap task is complete, there are no application startup commands to run.
 
