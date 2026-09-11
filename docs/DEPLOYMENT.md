@@ -68,3 +68,27 @@ A production deployment still requires:
 - appropriate LiveKit and TURN ports;
 - resource limits and monitoring;
 - backups for any persistent application data.
+
+## Reverse Proxy
+
+The `backend` and `frontend` services join an external Docker network named `caddy`
+in addition to the project's default network, and use fixed container names
+(`minicord-backend`, `minicord-frontend`) so a separately managed reverse proxy can
+reach them by name. Create the network once if it does not already exist:
+
+```bash
+docker network create caddy
+```
+
+Example reverse proxy site block (Caddy) that terminates TLS and forwards
+application API traffic to the backend and everything else to the frontend:
+
+```text
+your-domain.example {
+    reverse_proxy /api/* minicord-backend:8080
+    reverse_proxy minicord-frontend:80
+}
+```
+
+The reverse proxy is deployed and managed outside this repository; only the shared
+Docker network and container names are defined here.

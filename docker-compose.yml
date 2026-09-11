@@ -2,6 +2,7 @@ services:
   backend:
     build:
       context: ./backend
+    container_name: minicord-backend
     environment:
       BACKEND_ADDR: ${BACKEND_ADDR:-:8080}
       LIVEKIT_URL: ${LIVEKIT_URL:-ws://livekit:7880}
@@ -9,14 +10,21 @@ services:
       LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET:-replace-with-local-secret}
     ports:
       - "8080:8080"
+    networks:
+      - default
+      - caddy
 
   frontend:
     build:
       context: ./frontend
+    container_name: minicord-frontend
     depends_on:
       - backend
     ports:
       - "5173:80"
+    networks:
+      - default
+      - caddy
 
   livekit:
     image: livekit/livekit-server:latest
@@ -25,3 +33,8 @@ services:
       - "7880:7880"
       - "7881:7881"
       - "7882:7882/udp"
+
+networks:
+  caddy:
+    external: true
+
