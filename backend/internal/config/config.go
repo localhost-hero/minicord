@@ -6,10 +6,14 @@ import (
 )
 
 type Config struct {
-	BackendAddr      string
-	LiveKitURL       string
-	LiveKitAPIKey    string
-	LiveKitAPISecret string
+	BackendAddr       string
+	LiveKitURL        string
+	LiveKitAPIKey     string
+	LiveKitAPISecret  string
+	DBPath            string
+	AdminUsername     string
+	AdminPasswordHash string
+	SessionSecret     string
 }
 
 func Load(getenv func(string) string) (Config, error) {
@@ -37,10 +41,35 @@ func Load(getenv func(string) string) (Config, error) {
 		return Config{}, fmt.Errorf("LIVEKIT_API_SECRET must not be empty")
 	}
 
+	dbPath := getenv("DB_PATH")
+	if dbPath == "" {
+		dbPath = "./data/minicord.db"
+	}
+
+	adminUsername := strings.TrimSpace(getenv("ADMIN_USERNAME"))
+	if adminUsername == "" {
+		return Config{}, fmt.Errorf("ADMIN_USERNAME must not be empty")
+	}
+
+	adminPasswordHash := strings.TrimSpace(getenv("ADMIN_PASSWORD_HASH"))
+	if adminPasswordHash == "" {
+		return Config{}, fmt.Errorf("ADMIN_PASSWORD_HASH must not be empty")
+	}
+
+	sessionSecret := getenv("SESSION_SECRET")
+	if len(sessionSecret) < 32 {
+		return Config{}, fmt.Errorf("SESSION_SECRET must be at least 32 characters")
+	}
+
 	return Config{
-		BackendAddr:      address,
-		LiveKitURL:       liveKitURL,
-		LiveKitAPIKey:    apiKey,
-		LiveKitAPISecret: apiSecret,
+		BackendAddr:       address,
+		LiveKitURL:        liveKitURL,
+		LiveKitAPIKey:     apiKey,
+		LiveKitAPISecret:  apiSecret,
+		DBPath:            dbPath,
+		AdminUsername:     adminUsername,
+		AdminPasswordHash: adminPasswordHash,
+		SessionSecret:     sessionSecret,
 	}, nil
 }
+

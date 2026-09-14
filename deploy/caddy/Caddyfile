@@ -1,0 +1,15 @@
+vc.minicord.kz {
+    encode zstd gzip
+
+    @api path /api/*
+    reverse_proxy @api minicord-backend:8080
+
+    @health path /health* 
+    reverse_proxy @health minicord-backend:8080
+
+    reverse_proxy minicord-frontend:80
+}
+
+livekit.minicord.kz {
+    reverse_proxy livekit:7880
+}

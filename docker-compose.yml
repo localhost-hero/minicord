@@ -3,12 +3,11 @@ services:
     build:
       context: ./backend
     container_name: minicord-backend
-    environment:
-      BACKEND_ADDR: ${BACKEND_ADDR:-:8080}
-      # Must be reachable from the browser, not just from other containers.
-      LIVEKIT_URL: ${LIVEKIT_URL:-ws://localhost:7880}
-      LIVEKIT_API_KEY: ${LIVEKIT_API_KEY:-replace-with-local-key}
-      LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET:-replace-with-local-secret}
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - minicord-data:/data
+
     ports:
       - "8080:8080"
     networks:
@@ -19,8 +18,11 @@ services:
     build:
       context: ./frontend
     container_name: minicord-frontend
+    restart: unless-stopped
     depends_on:
       - backend
+    environment:
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:8080}
     ports:
       - "5173:80"
     networks:
@@ -29,13 +31,23 @@ services:
 
   livekit:
     image: livekit/livekit-server:latest
+    container_name: minicord-livekit-1
+    restart: unless-stopped
     command: --dev --bind 0.0.0.0
+    environment:
+      LIVEKIT_KEYS: "${LIVEKIT_API_KEY}: ${LIVEKIT_API_SECRET}"
     ports:
       - "7880:7880"
       - "7881:7881"
       - "7882:7882/udp"
+    networks:
+      - default
+      - caddy
 
 networks:
   caddy:
     external: true
+
+volumes:
+  minicord-data:
 

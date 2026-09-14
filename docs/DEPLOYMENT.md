@@ -85,13 +85,25 @@ reach them by name. Create the network once if it does not already exist:
 docker network create caddy
 ```
 
-Example reverse proxy site block (Caddy) that terminates TLS and forwards
-application API traffic to the backend and everything else to the frontend:
+Example reverse proxy site block (Caddy) for the public site `vc.minicord.kz`.
+It terminates TLS and forwards API requests to the Go backend while serving the
+frontend application for the rest of the site:
 
 ```text
-your-domain.example {
+vc.minicord.kz {
+    encode zstd gzip
     reverse_proxy /api/* minicord-backend:8080
+    reverse_proxy /health* minicord-backend:8080
     reverse_proxy minicord-frontend:80
+}
+```
+
+If LiveKit is exposed on the same host, add a second site or subdomain with a
+WebSocket proxy to the LiveKit service, for example:
+
+```text
+livekit.minicord.kz {
+    reverse_proxy livekit:7880
 }
 ```
 
