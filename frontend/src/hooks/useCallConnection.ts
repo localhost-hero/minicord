@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from "react";
-import { Room, RoomEvent, type RemoteParticipant } from "livekit-client";
+import { Room, RoomEvent, Track, LocalAudioTrack, type RemoteParticipant, type RemoteTrack } from "livekit-client";
+import { KrispNoiseFilter, isKrispNoiseFilterSupported } from "@livekit/krisp-noise-filter";
 import { fetchRoomToken } from "../lib/roomToken";
 import { reduceCallState, type CallState } from "../lib/callState";
 
@@ -8,9 +9,12 @@ export interface CallConnection {
   error: string | null;
   participants: string[];
   isMuted: boolean;
+  isNoiseSuppressionEnabled: boolean;
+  isNoiseSuppressionSupported: boolean;
   join: (room: string, identity: string) => Promise<void>;
   leave: () => Promise<void>;
   toggleMute: () => Promise<void>;
+  toggleNoiseSuppression: () => Promise<void>;
 }
 
 /**
@@ -22,7 +26,10 @@ export function useCallConnection(apiBaseUrl: string): CallConnection {
   const [error, setError] = useState<string | null>(null);
   const [participants, setParticipants] = useState<string[]>([]);
   const [isMuted, setIsMuted] = useState(false);
+  const [isNoiseSuppressionEnabled, setIsNoiseSuppressionEnabled] = useState(false);
+  const isNoiseSuppressionSupported = isKrispNoiseFilterSupported();
   const roomRef = useRef<Room | null>(null);
+  const krispProcessorRef = useRef<ReturnType<typeof KrispNoiseFilter> | null>(null);
   const intentionalLeaveRef = useRef(false);
 
   const syncParticipants = useCallback((room: Room) => {
@@ -49,6 +56,14 @@ export function useCallConnection(apiBaseUrl: string): CallConnection {
 
         room.on(RoomEvent.ParticipantConnected, () => syncParticipants(room));
         room.on(RoomEvent.ParticipantDisconnected, () => syncParticipants(room));
+        room.on(RoomEvent.TrackSubscribed, (track: RemoteTrack) => {
+          const element = track.attach();
+          element.style.display = "none";
+          document.body.appendChild(element);
+        });
+        room.on(RoomEvent.TrackUnsubscribed, (track: RemoteTrack) => {
+          track.detach().forEach((element) => element.remove());
+        });
         room.on(RoomEvent.Reconnecting, () => {
           setState((current) => {
             try {
@@ -85,7 +100,31 @@ export function useCallConnection(apiBaseUrl: string): CallConnection {
         });
 
         await room.connect(url, token);
+        await room.startAudio();
         await room.localParticipant.setMicrophoneEnabled(true);
+        if (isNoiseSuppressionSupported) {
+          try {
+            const krispProcessor = KrispNoiseFilter();
+            krispProcessorRef.current = krispProcessor;
+            const trackPub = room.localParticipant.getTrackPublication(Track.Source.Microphone);
+            const localTrack = trackPub?.track as LocalAudioTrack | undefined;
+            if (localTrack) {
+              const audioCtxClass =
+                window.AudioContext ||
+                (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+              if (audioCtxClass) {
+                localTrack.setAudioContext(new audioCtxClass());
+              }
+              await localTrack.setProcessor(krispProcessor);
+              setIsNoiseSuppressionEnabled(true);
+            }
+          } catch (cause) {
+            console.warn("Failed to enable noise processor:", cause);
+            setIsNoiseSuppressionEnabled(false);
+          }
+        } else {
+          setIsNoiseSuppressionEnabled(false);
+        }
         setIsMuted(false);
         syncParticipants(room);
         setState((current) => reduceCallState(current, { type: "CONNECTED" }));
@@ -101,6 +140,8 @@ export function useCallConnection(apiBaseUrl: string): CallConnection {
   );
 
   const leave = useCallback(async () => {
+    krispProcessorRef.current = null;
+    setIsNoiseSuppressionEnabled(false);
     const room = roomRef.current;
     if (room) {
       intentionalLeaveRef.current = true;
@@ -123,5 +164,56 @@ export function useCallConnection(apiBaseUrl: string): CallConnection {
     setIsMuted(nextMuted);
   }, [isMuted]);
 
-  return { state, error, participants, isMuted, join, leave, toggleMute };
+  const toggleNoiseSuppression = useCallback(async () => {
+    const room = roomRef.current;
+    if (!room) {
+      return;
+    }
+    const trackPub = room.localParticipant.getTrackPublication(Track.Source.Microphone);
+    const localTrack = trackPub?.track as LocalAudioTrack | undefined;
+    if (!localTrack) {
+      return;
+    }
+
+    if (isNoiseSuppressionEnabled) {
+      try {
+        await localTrack.stopProcessor();
+        krispProcessorRef.current = null;
+        setIsNoiseSuppressionEnabled(false);
+      } catch (cause) {
+        console.warn("Failed to stop noise processor:", cause);
+      }
+    } else {
+      try {
+        const krispProcessor = KrispNoiseFilter();
+        krispProcessorRef.current = krispProcessor;
+        const hasAudioCtx = (localTrack as unknown as { audioContext?: AudioContext }).audioContext;
+        if (!hasAudioCtx) {
+          const audioCtxClass =
+            window.AudioContext ||
+            (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+          if (audioCtxClass) {
+            localTrack.setAudioContext(new audioCtxClass());
+          }
+        }
+        await localTrack.setProcessor(krispProcessor);
+        setIsNoiseSuppressionEnabled(true);
+      } catch (cause) {
+        console.warn("Failed to enable noise processor:", cause);
+      }
+    }
+  }, [isNoiseSuppressionEnabled]);
+
+  return {
+    state,
+    error,
+    participants,
+    isMuted,
+    isNoiseSuppressionEnabled,
+    isNoiseSuppressionSupported,
+    join,
+    leave,
+    toggleMute,
+    toggleNoiseSuppression,
+  };
 }
