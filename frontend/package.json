@@ -13,7 +13,8 @@
     "typescript": "latest",
     "react": "latest",
     "react-dom": "latest",
-    "livekit-client": "latest"
+    "livekit-client": "latest",
+    "@livekit/krisp-noise-filter": "latest"
   },
   "devDependencies": {
     "@types/react": "latest",

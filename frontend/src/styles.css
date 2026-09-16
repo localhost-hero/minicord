@@ -16,6 +16,11 @@ body {
   min-height: 100vh;
 }
 
+button,
+input {
+  font: inherit;
+}
+
 .app-shell {
   display: grid;
   min-height: 100vh;
@@ -24,13 +29,21 @@ body {
   background: linear-gradient(145deg, #edf2ef 0%, #dbe7e2 100%);
 }
 
-.welcome-panel {
-  width: min(100%, 560px);
-  padding: 48px;
-  border: 1px solid rgba(23, 33, 31, 0.12);
-  border-radius: 8px;
+.panel-wrap {
+  width: min(100%, 1180px);
+  padding: 32px;
+  border-radius: 14px;
   background: rgba(255, 255, 255, 0.78);
   box-shadow: 0 24px 70px rgba(38, 65, 57, 0.12);
+}
+
+.standalone-card {
+  max-width: 580px;
+  margin: 0 auto;
+}
+
+.brand-block {
+  margin-bottom: 20px;
 }
 
 .eyebrow {
@@ -44,23 +57,99 @@ body {
 
 h1 {
   margin: 0;
-  font-size: clamp(2.75rem, 8vw, 5rem);
+  font-size: clamp(2.5rem, 6vw, 4rem);
   line-height: 0.95;
 }
 
-.status {
-  max-width: 34rem;
-  margin: 24px 0;
+h2 {
+  margin: 0 0 16px;
+  font-size: 1.15rem;
+}
+
+.layout-grid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.card {
+  padding: 20px;
+  border: 1px solid rgba(23, 33, 31, 0.12);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.stack-form {
+  display: grid;
+  gap: 8px;
+}
+
+.stack-form label {
+  font-size: 0.85rem;
   color: #52635d;
-  font-size: 1.05rem;
-  line-height: 1.6;
+}
+
+.stack-form input,
+.composer input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid rgba(23, 33, 31, 0.2);
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.button-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  background: #2f6b4f;
+  color: #fff;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+button.secondary {
+  background: #dfe9e3;
+  color: #18362d;
+}
+
+button:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.helper-text {
+  margin-top: 12px;
+  color: #3b6253;
+  font-size: 0.9rem;
+}
+
+.error-text {
+  color: #b3452f;
+}
+
+.call-panel,
+.chat-panel {
+  margin-top: 16px;
+}
+
+.participants {
+  color: #52635d;
+  font-size: 0.95rem;
 }
 
 .connection-state {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding-top: 18px;
+  margin-top: 16px;
+  padding-top: 16px;
   border-top: 1px solid rgba(23, 33, 31, 0.12);
   color: #52635d;
   font-size: 0.9rem;
@@ -84,51 +173,63 @@ h1 {
   box-shadow: 0 0 0 4px rgba(179, 69, 47, 0.14);
 }
 
-.join-form {
+.chat-panel {
   display: grid;
-  gap: 8px;
-  margin: 24px 0;
+  gap: 14px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(23, 33, 31, 0.12);
 }
 
-.join-form label {
-  font-size: 0.85rem;
-  color: #52635d;
-}
-
-.join-form input {
-  padding: 10px 12px;
-  border: 1px solid rgba(23, 33, 31, 0.2);
-  border-radius: 6px;
-  font-size: 1rem;
-}
-
-.join-form button,
-.call-controls button {
-  padding: 10px 16px;
-  border: none;
-  border-radius: 6px;
-  background: #2f6b4f;
-  color: #fff;
-  font-size: 0.95rem;
-  cursor: pointer;
-}
-
-.call-panel {
-  margin: 24px 0;
-}
-
-.participants {
-  color: #52635d;
-  font-size: 0.95rem;
-}
-
-.call-controls {
+.chat-header {
   display: flex;
+  justify-content: space-between;
   gap: 12px;
+  color: #3b6253;
+  font-size: 0.85rem;
+}
+
+.messages {
+  display: grid;
+  gap: 12px;
+  min-height: 180px;
+  max-height: 280px;
+  padding: 12px;
+  border: 1px solid rgba(23, 33, 31, 0.12);
+  border-radius: 8px;
+  background: #f5f8f6;
+  overflow: auto;
+}
+
+.message {
+  display: grid;
+  gap: 4px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.message-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: #52635d;
+  font-size: 0.76rem;
+}
+
+.empty-state {
+  margin: 0;
+  color: #52635d;
+}
+
+.composer {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
 }
 
 @media (max-width: 560px) {
-  .welcome-panel {
-    padding: 32px 24px;
+  .panel-wrap {
+    padding: 24px 18px;
   }
 }
